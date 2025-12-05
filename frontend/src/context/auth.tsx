@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { User } from "@supabase/supabase-js";
+import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
 type UserRole = "professional" | "student" | null;
@@ -18,16 +18,68 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [role, setRole] = useState<UserRole>(null);
   const [loading, setLoading] = useState(true);
 
+  const fetchUserRole = async (userId: string): Promise<UserRole> => {
+    try {
+      const { data: student } = await supabase
+        .from("students")
+        .select("user_id")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (student) {
+        return "student";
+      }
+
+      const { data: professional } = await supabase
+        .from("professionals")
+        .select("user_id")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (professional){
+        return "professional";
+      } 
+
+      return null;
+    } catch (error) {
+      console.error("Erro ao buscar role do usuário:", error);
+      return null;
+    }
+  };
+
   useEffect(() => {
+    const initializeAuth = async (session: Session | null) => {
+      try {
+        const currentUser = session?.user ?? null;
+        setUser(currentUser);
+
+        if (currentUser) {
+          const foundRole = await fetchUserRole(currentUser.id);
+          setRole(foundRole);
+        } else {
+          setRole(null);
+        }
+      } catch (error) {
+        console.error("Erro na inicialização da autenticação:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+      
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
+      initializeAuth(session);
     });
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+      if (!session) {
+        setUser(null);
+        setRole(null);
+        setLoading(false);
+      } else {
+        initializeAuth(session);
+      }
     });
 
     return () => {
@@ -35,28 +87,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, []);
 
-  useEffect(() => {
-    if (!user) {
-      setRole(null);
-      return;
-    }
-
-    // OPÇÃO 1: Buscar role da tabela students
-    supabase
-      .from("students")
-      .select("*")
-      .eq("user_id", user.id)
-      .maybeSingle()
-      .then(({ data }) => {
-        // Se existir em students, é student
-        setRole(data ? "student" : null);
-      });
-
-    // OPÇÃO 2: Ou simplesmente definir como student por padrão
-    // setRole("student");
-  }, [user]);
-
   const signOut = async () => {
+    setUser(null);
+    setRole(null);
     await supabase.auth.signOut();
   };
 

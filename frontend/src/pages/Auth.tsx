@@ -24,15 +24,12 @@ const Auth = () => {
   const [password, setPassword] = useState("");
 
   useEffect(() => {
-    // Se já está autenticado, redireciona
     if (!authLoading && user) {
-      if (!role) {
-        // Usuário ainda não tem role, redireciona para escolha
-        navigate("/");
+      
+      if (role === null) {
         return;
       }
 
-      // Redireciona baseado no role
       if (role === "professional") {
         navigate("/dashboard");
       } else if (role === "student") {
