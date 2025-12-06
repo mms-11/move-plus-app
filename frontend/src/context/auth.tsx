@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { Session, User } from "@supabase/supabase-js";
+import { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
 type UserRole = "professional" | "student" | null;
@@ -18,68 +18,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [role, setRole] = useState<UserRole>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchUserRole = async (userId: string): Promise<UserRole> => {
-    try {
-      const { data: student } = await supabase
-        .from("students")
-        .select("user_id")
-        .eq("user_id", userId)
-        .maybeSingle();
-
-      if (student) {
-        return "student";
-      }
-
-      const { data: professional } = await supabase
-        .from("professionals")
-        .select("user_id")
-        .eq("user_id", userId)
-        .maybeSingle();
-
-      if (professional){
-        return "professional";
-      } 
-
-      return null;
-    } catch (error) {
-      console.error("Erro ao buscar role do usuário:", error);
-      return null;
-    }
-  };
-
   useEffect(() => {
-    const initializeAuth = async (session: Session | null) => {
-      try {
-        const currentUser = session?.user ?? null;
-        setUser(currentUser);
-
-        if (currentUser) {
-          const foundRole = await fetchUserRole(currentUser.id);
-          setRole(foundRole);
-        } else {
-          setRole(null);
-        }
-      } catch (error) {
-        console.error("Erro na inicialização da autenticação:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-      
     supabase.auth.getSession().then(({ data: { session } }) => {
-      initializeAuth(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
     });
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) {
-        setUser(null);
-        setRole(null);
-        setLoading(false);
-      } else {
-        initializeAuth(session);
-      }
+      setUser(session?.user ?? null);
     });
 
     return () => {
@@ -87,9 +35,51 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, []);
 
+  useEffect(() => {
+    if (!user) {
+      setRole(null);
+      return;
+    }
+
+    const fetchRole = async () => {
+      // Verifica se é estudante
+      const { data: student } = await supabase
+        .from("students")
+        .select("id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (student) {
+        setRole("student");
+        return;
+      }
+
+      // Verifica se é profissional
+      const { data: professional } = await supabase
+        .from("professionals")
+        .select("id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (professional) {
+        setRole("professional");
+        return;
+      }
+
+      // Consulta tabela user_roles como fallback
+      const { data: userRole } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      setRole((userRole?.role as UserRole) ?? null);
+    };
+
+    fetchRole();
+  }, [user]);
+
   const signOut = async () => {
-    setUser(null);
-    setRole(null);
     await supabase.auth.signOut();
   };
 
