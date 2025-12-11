@@ -21,9 +21,9 @@
     --popover: 0 0% 100%;
     --popover-foreground: 215 76% 15%;
 
-    /* Primary: Verde (#25C588) */
-    --primary: 157 68% 46%;
-    --primary-foreground: 0 0% 100%;
+    /* Primary: Azul (#5F94E2) */
+    --primary: #5F94E2;
+    --primary-foreground: 215 76% 38%;
     
     --primary-light: 157 68% 66%;
     --primary-dark: 157 68% 36%;
@@ -35,9 +35,9 @@
     --muted: 216 20% 96%;
     --muted-foreground: 215 20% 50%;
 
-    /* Accent: Baseado no Azul Claro (#5F94E2) para fundos suaves */
-    --accent: 216 72% 96%; 
-    --accent-foreground: 215 76% 38%;
+    /* Accent: Verde (#25C588) para fundos suaves */
+    --accent: 157 68% 46%; 
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;

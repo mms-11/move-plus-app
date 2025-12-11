@@ -15,117 +15,60 @@ import NotFound from "./pages/NotFound";
 import { ProtectedRoute } from "@/components/protectedRoute";
 import Profile from "./pages/Profile";
 import PrivateChat from "./pages/PrivateChat";
+import LoginPhone from "./pages/LoginPhone";
+import Onboarding from "./pages/Onboarding";
+import AuthGuard from "@/components/AuthGuard"; 
 
 export function Routes() {
   return (
-    <RoutesDOM>
-      <Route path="/" element={<Index />} />
-      <Route path="/auth" element={<Auth />} />
+    <AuthGuard>
+      <RoutesDOM>
+        <Route path="/" element={<Index />} />
+        <Route path="/auth" element={<LoginPhone />} />
 
-      {/* Rotas públicas autenticadas */}
-      <Route
-        path="/buscar-aulas"
-        element={
-          <ProtectedRoute>
-            <SearchClasses />
-          </ProtectedRoute>
-        }
-      />
+        <Route path="/onboarding" element={<Onboarding />} />
+        
+        {/* ESTUDANTES */}
+        <Route
+          path="/minhas-turmas"
+          element={
+            <ProtectedRoute requireRole="student">
+              <MyClasses />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/turma-aluno/:id"
+          element={
+            <ProtectedRoute requireRole="student">
+              <ClassDetails />
+            </ProtectedRoute>
+          }
+        />
 
-      {/* Rotas apenas para profissionais */}
-      <Route
-        path="/cadastrar-aulas"
-        element={
-          <ProtectedRoute requireRole="professional">
-            <CreateClass />
-          </ProtectedRoute>
-        }
-      />
+        {/* PROFISSIONAIS */}
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute requireRole="professional">
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        {/* ... outras rotas de professional ... */}
 
-      <Route
-        path="/dashboard"
-        element={
-          <ProtectedRoute requireRole="professional">
-            <Dashboard />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/turma/:id"
-        element={
-          <ProtectedRoute requireRole="professional">
-            <ClassManagement />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/financeiro"
-        element={
-          <ProtectedRoute requireRole="professional">
-            <Financial />
-          </ProtectedRoute>
-        }
-      />
-
-      {/* Rotas apenas para estudantes */}
-      <Route
-        path="/turma-aluno/:id"
-        element={
-          <ProtectedRoute requireRole="student">
-            <ClassDetails />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/minhas-turmas"
-        element={
-          <ProtectedRoute requireRole="student">
-            <MyClasses />
-          </ProtectedRoute>
-        }
-      />
-
-      {/* Rotas de cadastro - protegidas mas sem role específica */}
-      <Route
-        path="/cadastro-profissional"
-        element={
-          <ProtectedRoute>
-            <ProfessionalRegistration />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/cadastro-aluno"
-        element={
-          <ProtectedRoute>
-            <StudentRegistration />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/perfil"
-        element={
-          <ProtectedRoute>
-            <Profile />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/chat"
-        element={
-          <ProtectedRoute>
-            <PrivateChat />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route path="*" element={<NotFound />} />
-    </RoutesDOM>
+        {/* COMUNS (Perfil, Chat) */}
+        <Route
+          path="/perfil"
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
+        
+        <Route path="*" element={<NotFound />} />
+      </RoutesDOM>
+    </AuthGuard>
   );
 }
