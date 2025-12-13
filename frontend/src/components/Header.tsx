@@ -38,6 +38,7 @@ const Header = () => {
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
             <img 
+              onClick={() => window.location.href = '/'}
               src="/move-primary.png"
               alt="Move+ Logo"
               className="w-22 h-22 max-w-[15%] object-contain"
