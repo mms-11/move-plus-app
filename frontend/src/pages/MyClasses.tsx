@@ -114,7 +114,7 @@ const MyClasses = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary/5 to-background py-12 px-4">
+    <div className="min-h-screen bg-gradient-hero from-primary/5 to-background py-12 px-4">
       <div className="container max-w-6xl mx-auto">
         <div className="max-w flex justify-between">
           <div className="mb-8">

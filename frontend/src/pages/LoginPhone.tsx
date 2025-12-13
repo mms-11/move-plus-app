@@ -118,7 +118,7 @@ export default function LoginPhone() {
                 disabled={tLoading || loading}
               />
             </div>
-            <Button type="submit" className="w-full h-14 text-lg bg-[#86CD82] text-white" disabled={tLoading || loading}>
+            <Button type="submit" className="w-full h-14 text-lg bg-[#25C588] text-white" disabled={tLoading || loading}>
               {(tLoading || loading) ? <Loader2 className="animate-spin" /> : <>Entrar <ArrowRight className="ml-2" /></>}
             </Button>
             <button type="button" onClick={() => setStep("PHONE")} className="w-full text-center text-sm text-gray-400 p-2">
@@ -128,7 +128,7 @@ export default function LoginPhone() {
         )}
       </div>
       <div className="mt-8 text-center">
-        <Link to="/login-profissional" className="text-sm text-gray-500 hover:text-[#E76F51]">
+        <Link to="/login-profissional" className="text-sm text-gray-500 hover:text-[#5F94E2]">
           É professor? Entre aqui
         </Link>
       </div>

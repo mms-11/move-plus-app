@@ -68,7 +68,7 @@ export default function SignUpEmail() {
       <div className="w-full max-w-md bg-white p-8 shadow-xl rounded-3xl border border-gray-100">
         
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-[#E76F51] mb-2">Criar Conta</h1>
+          <h1 className="text-3xl font-bold text-[#5F94E2] mb-2">Criar Conta</h1>
           <p className="text-gray-500">Cadastro exclusivo para Professores</p>
         </div>
 
@@ -127,7 +127,7 @@ export default function SignUpEmail() {
 
           <Button 
             type="submit" 
-            className="w-full h-14 text-lg font-bold bg-[#E76F51] hover:bg-[#D65F41] text-white rounded-xl"
+            className="w-full h-14 text-lg font-bold bg-[#5F94E2] hover:bg-[#1756AC] text-white rounded-xl"
             disabled={loading}
           >
             {loading ? <Loader2 className="animate-spin" /> : <>Criar Conta <ArrowRight className="ml-2" /></>}
@@ -135,7 +135,7 @@ export default function SignUpEmail() {
         </form>
 
         <div className="mt-8 text-center">
-          <Link to="/login-profissional" className="text-sm text-gray-500 hover:text-[#E76F51]">
+          <Link to="/login-profissional" className="text-sm text-gray-500 hover:text-[#5F94E2]">
             Já tem conta? Faça login
           </Link>
         </div>

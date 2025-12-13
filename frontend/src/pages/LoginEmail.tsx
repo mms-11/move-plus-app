@@ -86,14 +86,14 @@ export default function LoginEmail() {
 
           <Button 
             type="submit" 
-            className="w-full h-12 text-lg font-bold bg-[#E76F51] hover:bg-[#D65F41] text-white rounded-xl"
+            className="w-full h-12 text-lg font-bold text-white rounded-xl"
             disabled={tLoading || loading}
           >
             {(tLoading || loading) ? <Loader2 className="animate-spin" /> : <>Entrar como Profissional <ArrowRight className="ml-2 h-5 w-5"/></>}
           </Button>
 
           <div className="text-center text-sm text-gray-500">
-            <a href="/signup" className="hover:text-[#E76F51] underline">
+            <a href="/signup" className="hover:text-[#5F94E2]">
               Ainda não tem conta? Cadastre-se
             </a>
           </div>

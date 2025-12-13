@@ -93,12 +93,9 @@ const CreateClass = () => {
         variant: "destructive",
       });
 
-      console.log("professionalId ausente no handleSubmit:", professionalId);
-      console.log("Dados do formulário incompletos:", formData);
       return;
     }
 
-    console.log("professionalId enviado no INSERT:", professionalId);
     setLoading(true);
     try {
       const { error } = await supabase.from("classes").insert({

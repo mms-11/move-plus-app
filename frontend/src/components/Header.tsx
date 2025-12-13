@@ -33,14 +33,14 @@ const Header = () => {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <header className="sticky top-0 z-50 bg-[#5F94E2]/95 backdrop-blur-sm border-b shadow-soft">
+    <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b shadow-soft">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
             <img 
-              src="/move-alt.png"
+              src="/move-primary.png"
               alt="Move+ Logo"
-              className="w-20 h-20 object-contain"
+              className="w-22 h-22 max-w-[15%] object-contain"
             />
           </div>
 
@@ -50,7 +50,7 @@ const Header = () => {
               <Link key={item.path} to={item.path}>
                 <Button
                   variant={isActive(item.path) ? "default" : "ghost"}
-                  className="text-base"
+                  className="text-base font-bold"
                 >
                   {item.label}
                 </Button>

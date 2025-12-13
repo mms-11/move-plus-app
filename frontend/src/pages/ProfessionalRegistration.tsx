@@ -47,14 +47,11 @@ const ProfessionalRegistration = () => {
       }
       setUserId(user.id);
 
-      console.log("Verificando se o usuário já é um profissional...");
       const { data: professional } = await supabase
         .from("professionals")
         .select("*")
         .eq("id", user.id)
         .maybeSingle();
-
-      console.log("Dados do profissional:", professional);
 
       if (professional) navigate("/dashboard");
     };
