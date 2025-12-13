@@ -79,7 +79,7 @@ const ProfessionalRegistration = () => {
         description: "Seu perfil profissional foi criado com sucesso.",
       });
 
-       await fetchRole()
+      await fetchRole(userId);
 
       navigate("/dashboard");
     } catch (error: any) {

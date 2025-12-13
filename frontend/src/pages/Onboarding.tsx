@@ -55,7 +55,7 @@ export default function Onboarding() {
       
     await fetchRole(user.id);
     if (selectedRole === "student") navigate("/minhas-turmas");
-    else navigate("/dashboard");
+    else navigate("/cadastro-profissional");
 
     } catch (error: any) {
       toast({ title: "Erro", description: error.message, variant: "destructive" });
