@@ -15,9 +15,6 @@ import { Button } from "@/components/ui/button";
 import {
   MapPin,
   Clock,
-  Users,
-  Bell,
-  BellOff,
   MessageCircle,
 } from "lucide-react";
 
@@ -44,6 +41,7 @@ const MyClasses = () => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
+
       if (!user) throw new Error("Usuário não autenticado");
 
       const { data: enrollments, error: enrollError } = await supabase
@@ -110,7 +108,11 @@ const MyClasses = () => {
   };
 
   if (loading) {
-    return <div className="container py-12">Carregando...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        Carregando...
+      </div>
+    );
   }
 
   return (
@@ -146,14 +148,12 @@ const MyClasses = () => {
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {enrolledClasses.map((classItem) => (
               <Card
+                onClick={() => navigate(`/turma-aluno/${classItem.id}`)}
                 key={classItem.id}
                 className="cursor-pointer hover:shadow-lg transition-all duration-200"
               >
                 <CardHeader>
-                  <CardTitle
-                    onClick={() => navigate(`/turma-aluno/${classItem.id}`)}
-                    className="flex items-start justify-between"
-                  >
+                  <CardTitle className="flex items-start justify-between">
                     <span className="hover:text-primary transition-colors">
                       {classItem.title}
                     </span>

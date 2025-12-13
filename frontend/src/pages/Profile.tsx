@@ -201,7 +201,7 @@ export default function Profile() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    navigate("/login");
+    navigate("/");
   };
 
   const handleAvatarUpload = async (
@@ -239,14 +239,12 @@ export default function Profile() {
     const fileExt = file.name.split(".").pop();
     const fileName = `${session.user.id}/${Date.now()}.${fileExt}`;
 
-    // Delete old avatar if exists
     const oldAvatarUrl = profileData?.avatar_url;
     if (oldAvatarUrl) {
       const oldPath = oldAvatarUrl.split("/").slice(-2).join("/");
       await supabase.storage.from("avatars").remove([oldPath]);
     }
 
-    // Upload new avatar
     const { error: uploadError } = await supabase.storage
       .from("avatars")
       .upload(fileName, file);
@@ -283,13 +281,6 @@ export default function Profile() {
       });
       return;
     }
-
-    // Update local state
-    // if (profileData?.role === "student" && studentData) {
-    //   setStudentData({ ...studentData, avatar_url: publicUrl });
-    // } else if (userRole === "professional" && professionalData) {
-    //   setProfessionalData({ ...professionalData, avatar_url: publicUrl });
-    // }
 
     toast({
       title: "Foto atualizada",

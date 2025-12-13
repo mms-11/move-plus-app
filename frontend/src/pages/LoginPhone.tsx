@@ -61,6 +61,7 @@ export default function LoginPhone() {
       if (error) throw error;
       
       toast({ title: "Bem-vindo ao Move+!" });
+      navigate("/onboarding");
 
     } catch (error: any) {
       toast({ title: "Código inválido", variant: "destructive" });

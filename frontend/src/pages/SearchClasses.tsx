@@ -7,7 +7,6 @@ import {
   CardFooter,
   CardHeader,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -157,12 +156,13 @@ const SearchClasses = () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredClasses.map((classItem) => (
             <Card
+              onClick={() => navigate(`/turma-aluno/${classItem.id}`)}
               key={classItem.id}
               className="overflow-hidden hover:shadow-medium transition-all group"
             >
               <CardHeader>
                 <div className="space-y-2">
-                  <h3 className="text-xl font-bold">{classItem.activity}</h3>
+                  <h3 className="text-xl font-bold">{classItem.title}</h3>
                   <p className="text-muted-foreground">
                     Prof.{" "}
                     {classItem.profiles?.full_name || "Não especificado"}

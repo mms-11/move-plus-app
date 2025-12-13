@@ -22,20 +22,20 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
   if (!user) {
     if (!publicRoutes.includes(location.pathname)) {
-      return <Navigate to="/login" replace />;
+      return <Navigate to="/" replace />;
     }
     return <>{children}</>;
   }
 
   if (!role) {
     if (location.pathname !== "/onboarding") {
-      return <Navigate to="/onboarding" replace />;
+      return <Navigate to="/" replace />;
     }
     return <>{children}</>;
   }
 
   if (role) {
-    if (["/", "/login", "/onboarding"].includes(location.pathname)) {
+    if (publicRoutes.includes(location.pathname)) {
       if (role === "student") return <Navigate to="/minhas-turmas" replace />;
       if (role === "professional") return <Navigate to="/dashboard" replace />;
     }
