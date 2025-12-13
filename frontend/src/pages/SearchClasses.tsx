@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { PageHeader } from "@/components/PageHeader";
 import {
   Card,
   CardContent,
@@ -85,15 +86,9 @@ const SearchClasses = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-hero">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="mb-8 space-y-4">
-          <h1 className="text-4xl md:text-5xl font-bold">Encontre Sua Aula</h1>
-          <p className="text-xl text-muted-foreground">
-            Descubra atividades físicas próximas a você
-          </p>
-        </div>
+    <div className="min-h-screen bg-gradient-hero pb-24">
+      <PageHeader title="Encontre Sua Aula" showBackButton={false} />
+      <div className="container mx-auto px-4 py-6">
 
         {/* Filters */}
         <Card className="mb-8 shadow-soft">

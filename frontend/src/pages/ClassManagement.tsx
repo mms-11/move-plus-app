@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { PageHeader } from "@/components/PageHeader";
 import {
   Card,
   CardContent,
@@ -223,49 +224,52 @@ const ClassManagement = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-hero">
-      <div className="container mx-auto px-4 py-8">
-        <Button
-          variant="ghost"
-          onClick={() => navigate("/dashboard")}
-          className="mb-6"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Voltar ao Dashboard
-        </Button>
-
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold">{classData?.activity}</h1>
-          <p className="text-xl text-muted-foreground mt-2">
-            {classData?.schedule} • {classData?.location}
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white pb-24">
+      <PageHeader title={classData?.activity || "Gerenciar Turma"} />
+      <div className="container max-w-4xl mx-auto px-4 py-6">
+        <div className="mb-6 p-4 bg-white rounded-xl shadow-sm border">
+          <p className="text-sm text-gray-600">
+            <Calendar className="inline h-4 w-4 mr-1" />
+            {classData?.schedule}
+          </p>
+          <p className="text-sm text-gray-600 mt-1">
+            <MessageCircle className="inline h-4 w-4 mr-1" />
+            {classData?.location}
           </p>
         </div>
 
         <Tabs defaultValue="attendance" className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="attendance">
+          <TabsList className="grid w-full grid-cols-3 bg-gray-100 p-1">
+            <TabsTrigger 
+              value="attendance"
+              className="data-[state=active]:bg-white data-[state=active]:text-[#5F94E2] data-[state=active]:shadow-sm transition-all hover:bg-white/50"
+            >
               <ClipboardList className="w-4 h-4 mr-2" />
               Chamada
             </TabsTrigger>
-            <TabsTrigger value="frequency">
+            <TabsTrigger 
+              value="frequency"
+              className="data-[state=active]:bg-white data-[state=active]:text-[#5F94E2] data-[state=active]:shadow-sm transition-all hover:bg-white/50"
+            >
               <BarChart3 className="w-4 h-4 mr-2" />
               Frequência
             </TabsTrigger>
-            <TabsTrigger value="forum">
+            <TabsTrigger 
+              value="forum"
+              className="data-[state=active]:bg-white data-[state=active]:text-[#5F94E2] data-[state=active]:shadow-sm transition-all hover:bg-white/50"
+            >
               <MessageSquare className="w-4 h-4 mr-2" />
               Fórum
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="attendance" className="space-y-6">
-            <Card className="shadow-soft">
-              <CardHeader>
-                <CardTitle>Lista de Chamada</CardTitle>
-                <CardDescription>
-                  Selecione a data e marque os alunos presentes
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
+            <div className="bg-white rounded-xl shadow-sm border p-6">
+              <h3 className="text-lg font-semibold text-[#1756AC] mb-2">Lista de Chamada</h3>
+              <p className="text-sm text-gray-600 mb-6">
+                Selecione a data e marque os alunos presentes
+              </p>
+              <div className="space-y-4">
                 <div className="flex items-center gap-2 mb-4">
                   <Calendar className="h-5 w-5 text-muted-foreground" />
                   <Input
@@ -306,24 +310,21 @@ const ClassManagement = () => {
                 </Table>
                 <Button
                   onClick={handleAttendanceSubmit}
-                  className="w-full"
+                  className="w-full bg-[#25C588] hover:bg-[#25C588]/90 text-white"
                   size="lg"
                 >
                   Salvar Chamada
                 </Button>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </TabsContent>
 
           <TabsContent value="frequency" className="space-y-6">
-            <Card className="shadow-soft">
-              <CardHeader>
-                <CardTitle>Frequência Consolidada</CardTitle>
-                <CardDescription>
-                  Visão geral da frequência de todos os alunos
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
+            <div className="bg-white rounded-xl shadow-sm border p-6">
+              <h3 className="text-lg font-semibold text-[#1756AC] mb-2">Frequência Consolidada</h3>
+              <p className="text-sm text-gray-600 mb-6">
+                Visão geral da frequência de todos os alunos
+              </p>
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -393,48 +394,45 @@ const ClassManagement = () => {
                     )}
                   </TableBody>
                 </Table>
-              </CardContent>
-            </Card>
+            </div>
           </TabsContent>
 
           <TabsContent value="forum" className="space-y-6">
-            <Card className="shadow-soft">
-              <CardHeader>
-                <CardTitle>Enviar Mensagem</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
+            <div className="bg-white rounded-xl shadow-sm border p-6">
+              <h3 className="text-lg font-semibold text-[#1756AC] mb-4">Enviar Mensagem</h3>
+              <div className="space-y-4">
                 <Textarea
                   placeholder="Digite sua mensagem..."
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
                   rows={3}
+                  className="resize-none"
                 />
-                <Button onClick={handleSendMessage} className="w-full">
+                <Button 
+                  onClick={handleSendMessage} 
+                  className="w-full bg-[#5F94E2] hover:bg-[#2D7DD2]"
+                >
                   <Send className="w-4 h-4 mr-2" />
                   Enviar
                 </Button>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
             <div className="space-y-4">
               {messages.map((msg) => (
-                <Card key={msg.id} className="shadow-soft">
-                  <CardHeader className="pb-3">
-                    <div className="flex justify-between items-start">
-                      <CardTitle className="text-base">
-                        {msg.profiles?.full_name || "Usuário"}
-                      </CardTitle>
-                      <span className="text-sm text-muted-foreground">
-                        {format(new Date(msg.created_at), "dd/MM/yyyy HH:mm", {
-                          locale: ptBR,
-                        })}
-                      </span>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm">{msg.message}</p>
-                  </CardContent>
-                </Card>
+                <div key={msg.id} className="bg-white rounded-xl shadow-sm border p-4">
+                  <div className="flex justify-between items-start mb-2">
+                    <p className="font-semibold text-[#1756AC]">
+                      {msg.profiles?.full_name || "Usuário"}
+                    </p>
+                    <span className="text-xs text-gray-500">
+                      {format(new Date(msg.created_at), "dd/MM/yyyy HH:mm", {
+                        locale: ptBR,
+                      })}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-700">{msg.message}</p>
+                </div>
               ))}
             </div>
           </TabsContent>

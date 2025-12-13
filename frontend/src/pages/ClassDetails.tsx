@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { PageHeader } from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -351,225 +352,244 @@ const ClassDetails = () => {
   )}&travelmode=walking${originParam ? `&origin=${originParam}` : ""}`;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary/5 to-background py-12 px-4">
-      <div className="container max-w-4xl mx-auto">
-        <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4">
-          ← Voltar
-        </Button>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white pb-20">
+      <PageHeader title="Detalhes da Aula" />
+      
+      <div className="w-full h-48 bg-gradient-to-br from-[#5F94E2] via-[#4A84D1] to-[#25C588] relative">
+        {isEnrolled && (
+          <div className="absolute top-4 right-4">
+            <Badge className="bg-white text-[#25C588] text-base px-4 py-2 shadow-lg font-semibold">
+              ✓ Matriculado
+            </Badge>
+          </div>
+        )}
+      </div>
 
-        <Card>
-          <CardHeader>
-            <div className="flex items-start justify-between">
+      <div className="container max-w-2xl mx-auto px-4 -mt-6">
+        <div className="bg-white rounded-2xl shadow-lg p-6 space-y-6">
+          
+          <div>
+            <h1 className="text-2xl font-bold text-[#1756AC] mb-1">
+              {classData.activity}
+            </h1>
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex items-start gap-3 p-4 rounded-xl bg-gradient-to-r from-blue-50 to-blue-100/50 border border-blue-200">
+              <div className="rounded-lg bg-white p-2 shadow-sm">
+                <Clock className="h-5 w-5 text-[#5F94E2]" />
+              </div>
               <div>
-                <CardTitle className="text-3xl">{classData.activity}</CardTitle>
-                <CardDescription className="text-lg mt-2">
-                  {classData.description || "Sem descrição disponível"}
-                </CardDescription>
+                <p className="font-semibold text-[#1756AC]">{classData.schedule?.split(',')[0] || classData.schedule}</p>
+                <p className="text-sm text-muted-foreground">
+                  {classData.schedule?.split(',')[1]?.trim() || '10:00 - 11:00'}
+                </p>
               </div>
-              {isEnrolled && <Badge className="bg-primary">Matriculado</Badge>}
             </div>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="grid gap-4">
-              <div className="flex items-center gap-3">
-                <Clock className="h-5 w-5 text-muted-foreground" />
-                <span className="font-medium">Horário:</span>
-                <span>{classData.schedule}</span>
-              </div>
 
-              <div className="flex items-center gap-3">
-                <MapPin className="h-5 w-5 text-muted-foreground" />
-                <span className="font-medium">Local:</span>
-                <span>{classData.location_address}</span>
+            <div className="flex items-start gap-3 p-4 rounded-xl bg-gradient-to-r from-blue-50 to-blue-100/50 border border-blue-200">
+              <div className="rounded-lg bg-white p-2 shadow-sm">
+                <MapPin className="h-5 w-5 text-[#5F94E2]" />
               </div>
-
-              <div className="flex items-center gap-3">
-                <Users className="h-5 w-5 text-muted-foreground" />
-                <span className="font-medium">Vagas:</span>
-                <span>
-                  {enrollmentCount}/{classData.max_students}
-                  {availableSpots > 0
-                    ? ` (${availableSpots} disponíveis)`
-                    : " (Turma cheia)"}
-                </span>
+              <div className="flex-1">
+                <p className="font-semibold text-[#1756AC]">{classData.location_address?.split(',')[0] || 'Local'}</p>
+                <p className="text-sm text-muted-foreground">
+                  {classData.location_address?.split(',').slice(1).join(',').trim() || classData.location_address}
+                </p>
               </div>
+            </div>
 
-              {professional && (
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <User className="h-5 w-5 text-muted-foreground" />
-                    <span className="font-medium">Professor:</span>
-                    <span>{professional.full_name}</span>
-                  </div>
-                  {isEnrolled && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() =>
-                        navigate(`/chat?contact=${professional.user_id}`)
-                      }
-                    >
-                      <MessageCircle className="h-4 w-4 mr-2" />
-                      Chat
-                    </Button>
+            {classData.description && (
+              <div className="flex items-start gap-3 p-4 rounded-xl bg-gradient-to-r from-blue-50 to-blue-100/50 border border-blue-200">
+                <div className="rounded-lg bg-white p-2 shadow-sm">
+                  <Users className="h-5 w-5 text-[#5F94E2]" />
+                </div>
+                <div>
+                  <p className="font-semibold text-[#1756AC]">
+                    {enrollmentCount}/{classData.capacity} participantes
+                  </p>
+                  <p className="text-sm text-muted-foreground">{classData.description}</p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {professional && (
+            <div className="border-t pt-6">
+              <h3 className="text-lg font-semibold text-[#1756AC] mb-4">Seu Professor</h3>
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  {professional.avatar_url ? (
+                    <img 
+                      src={professional.avatar_url} 
+                      alt={professional.full_name}
+                      className="h-16 w-16 rounded-full object-cover border-2 border-[#5F94E2]"
+                    />
+                  ) : (
+                    <div className="h-16 w-16 rounded-full bg-gradient-to-br from-[#5F94E2] to-[#1756AC] flex items-center justify-center text-white text-xl font-bold">
+                      {professional.full_name?.charAt(0) || 'P'}
+                    </div>
                   )}
                 </div>
-              )}
-
-              {classData.price > 0 && (
-                <div className="flex items-center gap-3">
-                  <span className="font-medium">Valor:</span>
-                  <span className="text-xl font-bold text-primary">
-                    R$ {classData.price.toFixed(2)}
-                  </span>
+                <div className="flex-1">
+                  <p className="font-semibold text-[#1756AC]">{professional.full_name}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {professional.specialty || 'Fisioterapeuta especialista'}
+                  </p>
                 </div>
-              )}
-            </div>
-
-            <Separator />
-
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <MapPin className="h-5 w-5 text-primary" />
-                  <h3 className="text-lg font-semibold">Distância até a aula</h3>
-                </div>
-                {distanceInfo && (
-                  <Badge variant="secondary">
-                    {distanceInfo.distanceText} • {distanceInfo.durationText}
-                  </Badge>
+                {isEnrolled && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate(`/chat?contact=${professional.user_id}`)}
+                    className="border-[#5F94E2] text-[#5F94E2] hover:bg-[#5F94E2] hover:text-white"
+                  >
+                    <MessageCircle className="h-4 w-4 mr-2" />
+                    Chat
+                  </Button>
                 )}
               </div>
-              <p className="text-sm text-muted-foreground">
+            </div>
+          )}
+
+          <div className="border-t pt-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <MapPin className="h-5 w-5 text-[#5F94E2]" />
+                <h3 className="text-lg font-semibold text-[#1756AC]">Distância até a aula</h3>
+              </div>
+              {distanceInfo && (
+                <Badge variant="secondary" className="bg-[#25C588]/20 text-[#25C588] border-[#25C588]/30">
+                  {distanceInfo.distanceText} • {distanceInfo.durationText}
+                </Badge>
+              )}
+            </div>
+            <p className="text-sm text-muted-foreground">
               {distanceInfo
                 ? `Você está a ${distanceInfo.distanceText} (aprox. ${distanceInfo.durationText}) do local informado.`
                 : locationStatus}
-              </p>
-              {mapUrl ? (
-                <>
-                  <div className="aspect-video w-full overflow-hidden rounded-lg border shadow-sm">
-                    <iframe
-                      title="Mapa até a aula"
-                      src={mapUrl}
-                      className="h-full w-full"
-                      loading="lazy"
-                      allowFullScreen
-                      referrerPolicy="no-referrer-when-downgrade"
-                    />
-                  </div>
-                  <div className="flex justify-end">
-                    <Button asChild variant="outline" size="sm" className="mt-3">
-                      <a href={routeUrl} target="_blank" rel="noreferrer">
-                        Abrir rota no Google Maps
-                      </a>
-                    </Button>
-                  </div>
-                </>
-              ) : (
-                <div className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
-                  Configure a chave do Google Maps para visualizar o mapa.
-                </div>
-              )}
-            </div>
-
-            {!isEnrolled && (
+            </p>
+            {mapUrl ? (
               <>
-                <Separator />
-                <Button
-                  onClick={handleEnroll}
-                  disabled={enrolling || availableSpots <= 0}
-                  className="w-full"
-                  size="lg"
-                >
-                  {enrolling ? "Matriculando..." : "Confirmar Inscrição"}
+                <div className="aspect-video w-full overflow-hidden rounded-xl border shadow-sm">
+                  <iframe
+                    title="Mapa até a aula"
+                    src={mapUrl}
+                    className="h-full w-full"
+                    loading="lazy"
+                    allowFullScreen
+                    referrerPolicy="no-referrer-when-downgrade"
+                  />
+                </div>
+                <Button asChild variant="outline" size="sm" className="w-full">
+                  <a href={routeUrl} target="_blank" rel="noreferrer">
+                    <MapPin className="h-4 w-4 mr-2" />
+                    Abrir rota no Google Maps
+                  </a>
                 </Button>
               </>
+            ) : (
+              <div className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground text-center">
+                Configure a chave do Google Maps para visualizar o mapa
+              </div>
             )}
+          </div>
 
-            {isEnrolled && (
-              <>
-                <Separator />
-                <div className="space-y-4">
+          {!isEnrolled && (
+            <Button
+              onClick={handleEnroll}
+              disabled={enrolling || availableSpots <= 0}
+              className="w-full h-14 text-lg font-semibold bg-[#25C588] hover:bg-[#25C588]/90 text-white rounded-xl shadow-lg"
+              size="lg"
+            >
+              {enrolling ? "Matriculando..." : availableSpots <= 0 ? "Turma Cheia" : "🎯 Participar desta Aula"}
+            </Button>
+          )}
+
+          {isEnrolled && (
+            <>
+              <div className="border-t pt-6 space-y-4">
+                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Users className="h-5 w-5" />
-                    <h3 className="text-xl font-semibold">
+                    <Users className="h-5 w-5 text-[#5F94E2]" />
+                    <h3 className="text-lg font-semibold text-[#1756AC]">
                       Participantes da Turma
                     </h3>
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    {classmates.length}{" "}
-                    {classmates.length === 1
-                      ? "aluno matriculado"
-                      : "alunos matriculados"}
-                  </p>
-
-                  <div className="grid gap-2">
-                    {classmates.length === 0 ? (
-                      <p className="text-center text-muted-foreground py-4">
-                        Nenhum participante encontrado
-                      </p>
-                    ) : (
-                      classmates.map((mate: any) => (
-                        <Card key={mate.id + mate.full_name}>
-                          <CardContent className="py-3 px-4">
-                            <div className="flex items-center gap-2">
-                              <img
-                                className="h-7 w-7 text-muted-foreground rounded-full"
-                                src={mate.avatar_url}
-                                alt={`photo-of-${mate.name}`}
-                              />
-                               {/* <User className="h-7 w-7 text-muted-foreground" /> */}
-                              <span className="font-medium">
-                                {mate.full_name || "Aluno"}
-                              </span>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))
-                    )}
-                  </div>
+                  <Badge variant="secondary" className="bg-[#5F94E2]/20 text-[#5F94E2] border-[#5F94E2]/30">
+                    {enrollmentCount}/{classData.capacity}
+                  </Badge>
                 </div>
+                <p className="text-sm text-muted-foreground">
+                  {classmates.length}{" "}
+                  {classmates.length === 1 ? "aluno matriculado" : "alunos matriculados"}
+                </p>
 
-                <Separator />
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <MessageSquare className="h-5 w-5" />
-                    <h3 className="text-xl font-semibold">Fórum da Turma</h3>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    Comunicados e avisos do professor
-                  </p>
-
-                  <div className="space-y-3">
-                    {forumMessages.length === 0 ? (
-                      <p className="text-center text-muted-foreground py-8">
-                        Ainda não há mensagens no fórum
-                      </p>
-                    ) : (
-                      forumMessages.map((message) => (
-                        <Card key={message.id}>
-                          <CardContent className="pt-4">
-                            <div className="flex justify-between items-start mb-2">
-                              <span className="font-semibold">
-                                {message.profiles?.full_name || "Professor"}
-                              </span>
-                              <span className="text-xs text-muted-foreground">
-                                {new Date(message.created_at).toLocaleString(
-                                  "pt-BR"
-                                )}
-                              </span>
-                            </div>
-                            <p className="text-sm">{message.message}</p>
-                          </CardContent>
-                        </Card>
-                      ))
-                    )}
-                  </div>
+                <div className="grid gap-2">
+                  {classmates.length === 0 ? (
+                    <p className="text-center text-muted-foreground py-4">
+                      Nenhum participante encontrado
+                    </p>
+                  ) : (
+                    classmates.map((mate: any) => (
+                      <div 
+                        key={mate.id + mate.full_name}
+                        className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 border"
+                      >
+                        {mate.avatar_url ? (
+                          <img
+                            className="h-10 w-10 rounded-full object-cover border-2 border-[#5F94E2]"
+                            src={mate.avatar_url}
+                            alt={mate.full_name}
+                          />
+                        ) : (
+                          <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[#5F94E2] to-[#1756AC] flex items-center justify-center text-white font-semibold">
+                            {mate.full_name?.charAt(0) || 'A'}
+                          </div>
+                        )}
+                        <span className="font-medium text-[#1756AC]">
+                          {mate.full_name || "Aluno"}
+                        </span>
+                      </div>
+                    ))
+                  )}
                 </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
+              </div>
+
+              <div className="border-t pt-6 space-y-4">
+                <div className="flex items-center gap-2">
+                  <MessageSquare className="h-5 w-5 text-[#5F94E2]" />
+                  <h3 className="text-lg font-semibold text-[#1756AC]">Fórum da Turma</h3>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Comunicados e avisos do professor
+                </p>
+
+                <div className="space-y-3">
+                  {forumMessages.length === 0 ? (
+                    <p className="text-center text-muted-foreground py-8 bg-gray-50 rounded-lg">
+                      Ainda não há mensagens no fórum
+                    </p>
+                  ) : (
+                    forumMessages.map((message) => (
+                      <div key={message.id} className="p-4 rounded-lg bg-gray-50 border">
+                        <div className="flex justify-between items-start mb-2">
+                          <span className="font-semibold text-[#1756AC]">
+                            {message.profiles?.full_name || "Professor"}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {new Date(message.created_at).toLocaleString("pt-BR")}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-700">{message.message}</p>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

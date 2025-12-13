@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes as RoutesDOM, Route } from "react-router-dom";
-import Header from "./components/Header";
+import NavBar from "./components/NavBar";
 import Index from "./pages/Index";
+import Welcome from "./pages/Welcome";
 import SearchClasses from "./pages/SearchClasses";
 import CreateClass from "./pages/CreateClass";
 import Auth from "./pages/LoginEmail";
@@ -25,7 +26,8 @@ export function Routes() {
   return (
     <AuthGuard>
       <RoutesDOM>
-        <Route path="/" element={<Index />} />
+        <Route path="/" element={<Welcome />} />
+        <Route path="/home" element={<Index />} />
         <Route path="/login" element={<LoginPhone />} />
         <Route path="/login-profissional" element={<LoginEmail />} />
         <Route path="/signup" element={<SignUpEmail />} />

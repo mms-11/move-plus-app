@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { PageHeader } from "@/components/PageHeader";
 import {
   Card,
   CardContent,
@@ -101,117 +102,132 @@ const Dashboard = () => {
   }, 0);
 
   return (
-    <div className="min-h-screen bg-gradient-hero">
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-4xl font-bold">Dashboard</h1>
-            <p className="text-xl text-muted-foreground mt-2">
-              Olá, {professional?.full_name}!
-            </p>
-          </div>
-          <Button variant="outline" onClick={handleLogout}>
-            Sair
-          </Button>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white pb-24">
+      <PageHeader title="Dashboard" showBackButton={false} />
+      <div className="container mx-auto px-4 py-6">
+        <p className="text-lg text-muted-foreground mb-6">
+          Olá, {professional?.full_name}!
+        </p>
 
         <div className="grid md:grid-cols-3 gap-6 mb-8">
-          <Card className="shadow-soft">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">
+          <div className="bg-gradient-to-br from-[#5F94E2] to-[#2D7DD2] rounded-xl shadow-sm p-6">
+            <div className="flex flex-row items-center justify-between mb-4">
+              <h3 className="text-sm font-medium text-white/90">
                 Receita Total
-              </CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
+              </h3>
+              <DollarSign className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <div className="text-3xl font-bold text-white">
                 R$ 0.00
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-white/80 mt-1">
                 Acumulado de todas as turmas
               </p>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
-          <Card className="shadow-soft">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">
+          <div className="bg-white rounded-xl shadow-sm border p-6">
+            <div className="flex flex-row items-center justify-between mb-4">
+              <h3 className="text-sm font-medium text-gray-600">
                 Total de Alunos
-              </CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{totalStudents}</div>
-              <p className="text-xs text-muted-foreground mt-1">
+              </h3>
+              <Users className="h-5 w-5 text-[#5F94E2]" />
+            </div>
+            <div>
+              <div className="text-3xl font-bold text-[#1756AC]">{totalStudents}</div>
+              <p className="text-xs text-gray-500 mt-1">
                 Em {classes.length} turma{classes.length !== 1 ? "s" : ""}
               </p>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
-          <Card className="shadow-soft">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">
+          <div className="bg-gradient-to-br from-[#25C588] to-[#1ea872] rounded-xl shadow-sm p-6">
+            <div className="flex flex-row items-center justify-between mb-4">
+              <h3 className="text-sm font-medium text-white/90">
                 Demandas Ativas
-              </CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{0}</div>
-              <p className="text-xs text-muted-foreground mt-1">
+              </h3>
+              <TrendingUp className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <div className="text-3xl font-bold text-white">{0}</div>
+              <p className="text-xs text-white/80 mt-1">
                 Oportunidades disponíveis
               </p>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
 
         <Tabs defaultValue="classes" className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="classes">Minhas Turmas</TabsTrigger>
-            <TabsTrigger value="demands">Demandas</TabsTrigger>
-            <TabsTrigger value="financial">Financeiro</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3 bg-gray-100 p-1 rounded-lg h-auto">
+            <TabsTrigger 
+              value="classes" 
+              className="text-xs sm:text-sm md:text-base py-2 px-2 data-[state=active]:bg-white data-[state=active]:text-[#5F94E2] data-[state=active]:shadow-sm transition-all hover:bg-white/50"
+            >
+              <span className="hidden sm:inline">Minhas Turmas</span>
+              <span className="sm:hidden">Turmas</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="demands" 
+              className="text-xs sm:text-sm md:text-base py-2 px-2 data-[state=active]:bg-white data-[state=active]:text-[#5F94E2] data-[state=active]:shadow-sm transition-all hover:bg-white/50"
+            >
+              Demandas
+            </TabsTrigger>
+            <TabsTrigger 
+              value="financial" 
+              className="text-xs sm:text-sm md:text-base py-2 px-2 data-[state=active]:bg-white data-[state=active]:text-[#5F94E2] data-[state=active]:shadow-sm transition-all hover:bg-white/50"
+            >
+              Financeiro
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="classes" className="space-y-4">
             {classes.length === 0 ? (
-              <Card>
-                <CardContent className="py-8 text-center">
-                  <p className="text-muted-foreground mb-4">
+              <div className="bg-white rounded-xl shadow-sm border p-8 text-center">
+                <div className="flex flex-col items-center justify-center space-y-4">
+                  <div className="rounded-full bg-blue-100 p-6">
+                    <BookOpen className="h-12 w-12 text-[#5F94E2]" />
+                  </div>
+                  <p className="text-gray-600">
                     Você ainda não tem turmas cadastradas.
                   </p>
-                  <Button onClick={() => navigate("/cadastrar-aulas")}>
+                  <Button 
+                    onClick={() => navigate("/cadastrar-aulas")}
+                    className="bg-[#5F94E2] hover:bg-[#1756AC] transition-colors"
+                  >
                     Cadastrar Primeira Turma
                   </Button>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ) : (
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {classes.map((classItem) => (
-                  <Card 
+                  <div 
                     key={classItem.id} 
-                    className="shadow-soft" 
+                    className="bg-white rounded-xl shadow-sm border p-4 space-y-3 hover:shadow-md transition-shadow cursor-pointer" 
                     onClick={() => navigate(`/turma/${classItem.id}`)}
                   >
-                    <CardHeader>
-                      <CardTitle className="text-lg font-medium">
+                    <div>
+                      <h3 className="text-lg font-semibold text-[#1756AC]">
                         {classItem.title}
-                      </CardTitle>
-                      <CardDescription className="text-sm text-muted-foreground">
-                        {classItem.activity}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex flex-col space-y-2">
-                        <div className="flex items-center space-x-2">
-                          <MapPin className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm">{classItem.location_address}</span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Clock className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm">{classItem.schedule}</span>
-                        </div>
+                      </h3>
+                      {classItem.activity && (
+                        <p className="text-sm text-gray-500 mt-1">
+                          {classItem.activity}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex flex-col space-y-2">
+                      <div className="flex items-center space-x-2">
+                        <MapPin className="h-4 w-4 text-gray-600" />
+                        <span className="text-sm text-gray-600">{classItem.location_address}</span>
                       </div>
-                    </CardContent>
-                  </Card>
+                      <div className="flex items-center space-x-2">
+                        <Clock className="h-4 w-4 text-gray-600" />
+                        <span className="text-sm text-gray-600">{classItem.schedule}</span>
+                      </div>
+                    </div>
+                  </div>
                 ))}
               </div>
             )}

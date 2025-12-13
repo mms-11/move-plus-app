@@ -9,7 +9,7 @@ import CTA from "@/components/CTA";
 
 const Index = () => {
   return (
-    <main className="min-h-screen">
+    <main className="min-h-screen pb-24">
       <Hero />
       <Features />
       <HowItWorks />

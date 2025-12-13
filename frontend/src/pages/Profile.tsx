@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -58,6 +59,7 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   const [profileData, setProfileData] = useState<ProfileData>({
     role: "",
@@ -318,22 +320,11 @@ export default function Profile() {
       .slice(0, 2) || "?";
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5 py-12">
-      <div className="container max-w-3xl">
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5 pb-24">
+      <PageHeader title="Meu Perfil" showBackButton={false} />
+      <div className="container max-w-3xl py-6">
         <Card>
-          <CardHeader className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-            <CardTitle className="text-3xl flex items-center gap-2">
-              <User className="h-8 w-8" />
-              Meu Perfil
-            </CardTitle>
-            <div className="flex items-center gap-3 text-sm text-muted-foreground">
-              {authUser?.email && <span>{authUser.email}</span>}
-              <Button variant="outline" size="sm" onClick={handleLogout}>
-                Sair
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6">
             {/* Avatar */}
             <div className="flex flex-col items-center mb-8">
               <div className="relative">
@@ -376,7 +367,7 @@ export default function Profile() {
                   {profileData?.role === "student"
                     ? "Perfil de aluno"
                     : profileData?.role === "professional"
-                    ? "Perfil de profissional"
+                    ? `Especialista em ${professionalData?.specialty || "Educação Física"}`
                     : "Perfil"}
                 </p>
               </div>
@@ -391,253 +382,261 @@ export default function Profile() {
               </Card>
             )}
 
-            {/* Dados */}
-            <div className="space-y-6">
-              {/* Nome */}
-              <div className="space-y-2">
-                <Label
-                  htmlFor="full_name"
-                  className="flex items-center gap-2"
-                >
-                  <User className="h-4 w-4" />
-                  Nome Completo
-                </Label>
-                <Input
-                  id="full_name"
-                  value={profileData.full_name || ""}
-                  onChange={(e) =>
-                    setProfileData({
-                      ...profileData,
-                      full_name: e.target.value,
-                    })
-                  }
-                />
-              </div>
-              {/* Sexo */}
-              <div className="space-y-2">
-                <Label htmlFor="gender" className="flex items-center gap-2">
-                  <User className="h-4 w-4" />
-                  Sexo
-                </Label>
-                
-                <Select
-                  value={profileData.gender}
-                  onValueChange={(value: any) =>
-                    setProfileData({ ...profileData, gender: value })
-                  }
-                >
-                  <SelectTrigger id="gender">
-                    <SelectValue placeholder="Selecione o sexo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="masculino">Masculino</SelectItem>
-                    <SelectItem value="feminino">Feminino</SelectItem>
-                    <SelectItem value="outro">Outro</SelectItem>
-                    <SelectItem value="nao_informar">Prefiro não informar</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              {/* Telefone */}
-              <div className="space-y-2">
-                <Label htmlFor="phone" className="flex items-center gap-2">
-                  <Phone className="h-4 w-4" />
-                  Telefone
-                </Label>
-                <Input
-                  id="phone"
-                  value={profileData.phone}
-                  onChange={(e) =>
-                    setProfileData({ ...profileData , phone: e.target.value })
-                  }
-                />
-              </div>
-              {/* E-mail */}
-              <div className="space-y-2">
-                <Label htmlFor="email" className="flex items-center gap-2">
-                  <Mail className="h-4 w-4" />
-                  E-mail
-                </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={profileData.email}
-                  onChange={(e) =>
-                    setProfileData({ ...profileData, email: e.target.value })
-                  }
-                />
-              </div>
-              {/* CPF */}
-              <div className="space-y-2">
-                <Label htmlFor="cpf" className="flex items-center gap-2">
-                  <FileText className="h-4 w-4" />
-                  CPF
-                </Label>
-                <Input
-                  id="cpf"
-                  type="text"
-                  value={profileData.cpf}
-                  onChange={(e) =>
-                    setProfileData({ ...profileData, cpf: e.target.value })
-                  }
-                />
-              </div>
-              {/* Endereço */}
-              <div className="space-y-2">
-                <Label htmlFor="address" className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4" />
-                  Endereço
-                </Label>
-                <Input
-                  id="address"
-                  value={profileData.address}
-                  onChange={(e) =>
-                    setProfileData({
-                      ...profileData,
-                      address: e.target.value,
-                    })
-                  }
-                />
-              </div>
-              {/* Data de Nascimento */}
-              <div className="space-y-2">
-                <Label
-                  htmlFor="birth_date"
-                  className="flex items-center gap-2"
-                >
-                  <Calendar className="h-4 w-4" />
-                  Data de Nascimento
-                </Label>
-                <Input
-                  id="birth_date"
-                  type="date"
-                  value={profileData.birth_date}
-                  onChange={(e: { target: { value: any; }; }) =>
-                    setProfileData({
-                      ...profileData,
-                      birth_date: e.target.value,
-                    })
-                  }
-                />
-              </div>
-              {/* Dados do profissional */}
-              {profileData?.role === "professional" && professionalData && (
-                <><div className="space-y-2">
-                  <Label htmlFor="cref" className="flex items-center gap-2">
-                    <Award className="h-4 w-4" />
-                    CREF
+            {/* dados - só aparecem ao editar */}
+            {isEditing && (
+              <div className="space-y-6 mb-6 p-6 rounded-lg border-2 border-dashed border-blue-200 bg-blue-50/30">
+                <h3 className="font-semibold text-lg text-[#1756AC] mb-4">Informações Completas</h3>
+             
+                <div className="space-y-2">
+                  <Label htmlFor="full_name" className="flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    Nome Completo
                   </Label>
                   <Input
-                    id="cref"
-                    value={professionalData.cref}
-                    disabled
-                    className="bg-muted" />
-                </div><div className="space-y-2">
-                    <Label
-                      htmlFor="specialty"
-                      className="flex items-center gap-2"
-                    >
-                      <Award className="h-4 w-4" />
-                      Especialidade
-                    </Label>
-                    <Input
-                      id="specialty"
-                      value={professionalData.specialty}
-                      onChange={(e) => setProfessionalData({
-                        ...professionalData,
-                        specialty: e.target.value,
-                      })} />
-                  </div><div className="space-y-2">
-                    <Label
-                      htmlFor="verification_status"
-                      className="flex items-center gap-2"
-                    >
-                      <Award className="h-4 w-4" />
-                      Status de Verificação
-                    </Label>
-                    <Input
-                      id="verification_status"
-                      value={professionalData.verification_status}
-                      disabled
-                      className="bg-muted" />
-                  </div></>
-              )}
-              {/* Dados do aluno */}
-              {profileData?.role === "student" && studentData && (
-                <div className="space-y-6">
-                  <div className="space-y-2">
-                    <Label
-                      htmlFor="emergency_contact_name"
-                      className="flex items-center gap-2"
-                    >
-                      <Phone className="h-4 w-4" />
-                      Nome do Contato de Emergência
-                    </Label>
-                    <Input
-                      id="emergency_contact_name"
-                      value={studentData.emergency_contact_name || ""}
-                      onChange={(e) =>
-                        setStudentData({
-                          ...studentData,
-                          emergency_contact_name: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label
-                      htmlFor="emergency_contact_phone"
-                      className="flex items-center gap-2"
-                    >
-                      <Phone className="h-4 w-4" />
-                      Telefone do Contato de Emergência
-                    </Label>
-                    <Input
-                      id="emergency_contact_phone"
-                      value={studentData.emergency_contact_phone || ""}
-                      onChange={(e) =>
-                        setStudentData({
-                          ...studentData,
-                          emergency_contact_phone: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label
-                      htmlFor="health_certificate"
-                      className="flex items-center gap-2"
-                    >
-                      <FileText className="h-4 w-4" />
-                      Certificado de Saúde
-                    </Label>
-                    {studentData.health_certificate_url ? (
-                      <a
-                        href={studentData.health_certificate_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary underline"
-                      >
-                        Visualizar Certificado
-                      </a>
-                    ) : (
-                      <p className="text-sm text-muted-foreground">
-                        Nenhum certificado anexado.
-                      </p>
-                    )}
-                  </div>
+                    id="full_name"
+                    value={profileData.full_name || ""}
+                    onChange={(e) =>
+                      setProfileData({
+                        ...profileData,
+                        full_name: e.target.value,
+                      })
+                    }
+                  />
                 </div>
-              )}
-            </div>
-            {/* Save Button */}
-            <div className="mt-8 flex justify-end">
+
+                <div className="space-y-2">
+                  <Label htmlFor="gender" className="flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    Sexo
+                  </Label>
+                  <Select
+                    value={profileData.gender}
+                    onValueChange={(value: any) =>
+                      setProfileData({ ...profileData, gender: value })
+                    }
+                  >
+                    <SelectTrigger id="gender">
+                      <SelectValue placeholder="Selecione o sexo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="masculino">Masculino</SelectItem>
+                      <SelectItem value="feminino">Feminino</SelectItem>
+                      <SelectItem value="outro">Outro</SelectItem>
+                      <SelectItem value="nao_informar">Prefiro não informar</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="phone" className="flex items-center gap-2">
+                    <Phone className="h-4 w-4" />
+                    Telefone
+                  </Label>
+                  <Input
+                    id="phone"
+                    value={profileData.phone}
+                    onChange={(e) =>
+                      setProfileData({ ...profileData, phone: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="flex items-center gap-2">
+                    <Mail className="h-4 w-4" />
+                    E-mail
+                  </Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={profileData.email}
+                    onChange={(e) =>
+                      setProfileData({ ...profileData, email: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="cpf" className="flex items-center gap-2">
+                    <FileText className="h-4 w-4" />
+                    CPF
+                  </Label>
+                  <Input
+                    id="cpf"
+                    type="text"
+                    value={profileData.cpf}
+                    onChange={(e) =>
+                      setProfileData({ ...profileData, cpf: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="address" className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4" />
+                    Endereço
+                  </Label>
+                  <Input
+                    id="address"
+                    value={profileData.address}
+                    onChange={(e) =>
+                      setProfileData({
+                        ...profileData,
+                        address: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="birth_date" className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
+                    Data de Nascimento
+                  </Label>
+                  <Input
+                    id="birth_date"
+                    type="date"
+                    value={profileData.birth_date}
+                    onChange={(e: { target: { value: any } }) =>
+                      setProfileData({
+                        ...profileData,
+                        birth_date: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                {profileData?.role === "professional" && professionalData && (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="cref" className="flex items-center gap-2">
+                        <Award className="h-4 w-4" />
+                        CREF
+                      </Label>
+                      <Input
+                        id="cref"
+                        value={professionalData.cref}
+                        disabled
+                        className="bg-muted"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="specialty" className="flex items-center gap-2">
+                        <Award className="h-4 w-4" />
+                        Especialidade
+                      </Label>
+                      <Input
+                        id="specialty"
+                        value={professionalData.specialty}
+                        onChange={(e) =>
+                          setProfessionalData({
+                            ...professionalData,
+                            specialty: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="verification_status" className="flex items-center gap-2">
+                        <Award className="h-4 w-4" />
+                        Status de Verificação
+                      </Label>
+                      <Input
+                        id="verification_status"
+                        value={professionalData.verification_status}
+                        disabled
+                        className="bg-muted"
+                      />
+                    </div>
+                  </>
+                )}
+
+                {profileData?.role === "student" && studentData && (
+                  <div className="space-y-6 pt-4 border-t">
+                    <h4 className="font-semibold text-[#1756AC]">Informações de Emergência</h4>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="emergency_contact_name" className="flex items-center gap-2">
+                        <Phone className="h-4 w-4" />
+                        Nome do Contato de Emergência
+                      </Label>
+                      <Input
+                        id="emergency_contact_name"
+                        value={studentData.emergency_contact_name || ""}
+                        onChange={(e) =>
+                          setStudentData({
+                            ...studentData,
+                            emergency_contact_name: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="emergency_contact_phone" className="flex items-center gap-2">
+                        <Phone className="h-4 w-4" />
+                        Telefone do Contato de Emergência
+                      </Label>
+                      <Input
+                        id="emergency_contact_phone"
+                        value={studentData.emergency_contact_phone || ""}
+                        onChange={(e) =>
+                          setStudentData({
+                            ...studentData,
+                            emergency_contact_phone: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="health_certificate" className="flex items-center gap-2">
+                        <FileText className="h-4 w-4" />
+                        Certificado de Saúde
+                      </Label>
+                      {studentData.health_certificate_url ? (
+                        <a
+                          href={studentData.health_certificate_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[#5F94E2] underline hover:text-[#2D7DD2] block"
+                        >
+                          Visualizar Certificado
+                        </a>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">
+                          Nenhum certificado anexado.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+            <div className="mt-8">
               <Button
-                onClick={handleProfileSave}
+                onClick={async () => {
+                  if (isEditing) {
+                    await handleProfileSave();
+                    setIsEditing(false);
+                  } else {
+                    setIsEditing(true);
+                  }
+                }}
+                className="w-full bg-[#5F94E2] hover:bg-[#2D7DD2]"
                 disabled={saving}
-                className="w-full"
               >
-                {saving ? "Salvando..." : "Salvar Alterações"}
+                {isEditing ? (saving ? "Salvando..." : "Salvar Alterações") : "Editar Perfil"}
+              </Button>
+            </div>
+
+            <div className="mt-4">
+              <Button
+                onClick={handleLogout}
+                variant="outline"
+                className="w-full border-2 border-red-200 text-red-600 hover:bg-red-50"
+              >
+                Sair
               </Button>
             </div>
           </CardContent>
