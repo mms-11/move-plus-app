@@ -44,6 +44,19 @@ interface Student {
   attendance_rate: number;
 }
 
+interface FrequencyData {
+  id: string;
+  user_id: string;
+  class_id: string;
+  date: string;
+  profiles: {
+    full_name: string;
+  } | null;
+  absences?: number;
+  total_classes?: number;
+  attendance_rate?: number;
+}
+
 interface Message {
   id: string;
   message: string;
@@ -66,13 +79,13 @@ const ClassManagement = () => {
   const [selectedDate, setSelectedDate] = useState(
     format(new Date(), "yyyy-MM-dd")
   );
-  const [frequencyData, setFrequencyData] = useState<Student[]>([]);
+  const [frequencyData, setFrequencyData] = useState<FrequencyData[]>([]);
 
   useEffect(() => {
     loadClassData();
     loadStudents();
-    loadMessages();
-  }, [id]);
+    loadFrequencyData();
+  }, [id, frequencyData]);
 
   const loadClassData = async () => {
     const { data } = await supabase
@@ -157,18 +170,118 @@ const ClassManagement = () => {
     }
   };
 
-  const handleAttendanceSubmit = async () => {
-    const attendanceRecords = students.map((student) => ({
-      enrollment_id: student.enrollment_id,
-      date: selectedDate,
-      present: attendance[student.id] || false,
-    }));
+  const loadFrequencyData = async () => {
+    try {
+      // Buscar todos os registros de frequência
+      const { data: frequencyRecords, error: freqError } = await supabase
+        .from("frequency")
+        .select(`
+          *,
+          profiles:user_id (
+            full_name
+          )
+        `)
+        .eq("class_id", id);
 
-    const { error } = await supabase
-      .from("attendance")
-      .upsert(attendanceRecords, {
-        onConflict: "enrollment_id,date",
+      if (freqError) {
+        console.error("Error loading frequency data:", freqError);
+        return;
+      }
+
+      // Buscar todos os alunos matriculados
+      const { data: enrollments, error: enrollError } = await supabase
+        .from("enrollments")
+        .select("user_id")
+        .eq("class_id", id);
+
+      if (enrollError) {
+        console.error("Error loading enrollments:", enrollError);
+        return;
+      }
+
+      // Buscar todas as datas únicas de aula (frequência registrada)
+      const uniqueDates = new Set(frequencyRecords?.map(f => f.date) || []);
+      const totalClasses = uniqueDates.size;
+
+      // Agrupar por aluno e calcular estatísticas
+      const studentMap = new Map<string, FrequencyData>();
+
+      // Inicializar todos os alunos matriculados
+      enrollments?.forEach(enrollment => {
+        const userId = enrollment.user_id;
+        if (!studentMap.has(userId)) {
+          studentMap.set(userId, {
+            id: userId,
+            user_id: userId,
+            class_id: id!,
+            date: "",
+            profiles: null,
+            absences: totalClasses,
+            total_classes: totalClasses,
+            attendance_rate: 0,
+          });
+        }
       });
+
+      // Processar presenças
+      frequencyRecords?.forEach(record => {
+        const userId = record.user_id;
+        const existing = studentMap.get(userId);
+        
+        if (existing) {
+          if (!existing.profiles && record.profiles) {
+            existing.profiles = record.profiles;
+          }
+        } else {
+          studentMap.set(userId, {
+            ...record,
+            absences: totalClasses,
+            total_classes: totalClasses,
+            attendance_rate: 0,
+          });
+        }
+      });
+
+      // Calcular presenças por aluno
+      const presenceCount = new Map<string, number>();
+      frequencyRecords?.forEach(record => {
+        presenceCount.set(
+          record.user_id,
+          (presenceCount.get(record.user_id) || 0) + 1
+        );
+      });
+
+      // Atualizar ausências e taxa de frequência
+      studentMap.forEach((student, userId) => {
+        const presences = presenceCount.get(userId) || 0;
+        student.absences = totalClasses - presences;
+        student.attendance_rate = totalClasses > 0 
+          ? (presences / totalClasses) * 100 
+          : 0;
+      });
+
+      const consolidatedData = Array.from(studentMap.values());
+      setFrequencyData(consolidatedData);
+    } catch (error) {
+      console.error("Error in loadFrequencyData:", error);
+    }
+  };
+
+  const handleAttendanceSubmit = async () => {
+
+    const attendanceRecords = Object.entries(attendance)
+    .filter(([_, isPresent]) => isPresent === true)
+    .map(([userId]) => ({
+      user_id: userId,
+      date: selectedDate,
+      class_id: classData.id,
+    }))
+
+    console.log("Frequency:", attendance)
+    
+    const { error } = await supabase
+      .from("frequency")
+      .upsert(attendanceRecords);
 
     if (error) {
       toast({
@@ -186,33 +299,35 @@ const ClassManagement = () => {
       });
       loadStudents();
     }
+
+    console.log("Attendance submitted:", attendanceRecords);
   };
 
-  const handleSendMessage = async () => {
-    if (!newMessage.trim()) return;
+  // const handleSendMessage = async () => {
+  //   if (!newMessage.trim()) return;
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return;
+  //   const {
+  //     data: { user },
+  //   } = await supabase.auth.getUser();
+  //   if (!user) return;
 
-    const { error } = await supabase.from("forum_messages").insert({
-      class_id: id,
-      user_id: user.id,
-      message: newMessage,
-    });
+  //   const { error } = await supabase.from("forum_messages").insert({
+  //     class_id: id,
+  //     user_id: user.id,
+  //     message: newMessage,
+  //   });
 
-    if (error) {
-      toast({
-        title: "Erro ao enviar mensagem",
-        description: error.message,
-        variant: "destructive",
-      });
-    } else {
-      setNewMessage("");
-      loadMessages();
-    }
-  };
+  //   if (error) {
+  //     toast({
+  //       title: "Erro ao enviar mensagem",
+  //       description: error.message,
+  //       variant: "destructive",
+  //     });
+  //   } else {
+  //     setNewMessage("");
+  //     loadMessages();
+  //   }
+  // };
 
   if (loading) {
     return (
@@ -353,27 +468,27 @@ const ClassManagement = () => {
                       frequencyData.map((student) => (
                         <TableRow key={student.id}>
                           <TableCell className="font-medium">
-                            {student.full_name}
+                            {student.profiles?.full_name || "Sem nome"}
                           </TableCell>
                           <TableCell className="text-center">
-                            {student.total_classes}
+                            {student.total_classes || 0}
                           </TableCell>
                           <TableCell className="text-center text-green-600 font-semibold">
-                            {student.total_classes - student.absences}
+                            {(student.total_classes || 0) - (student.absences || 0)}
                           </TableCell>
                           <TableCell className="text-center text-red-600 font-semibold">
-                            {student.absences}
+                            {student.absences || 0}
                           </TableCell>
                           <TableCell className="text-center">
                             <Badge
                               variant={
-                                student.attendance_rate >= 75
+                                (student.attendance_rate || 0) >= 75
                                   ? "default"
                                   : "destructive"
                               }
                               className="font-semibold"
                             >
-                              {student.attendance_rate.toFixed(1)}%
+                              {(student.attendance_rate || 0).toFixed(1)}%
                             </Badge>
                           </TableCell>
 
@@ -382,7 +497,7 @@ const ClassManagement = () => {
                               variant="ghost"
                               size="sm"
                               onClick={() =>
-                                navigate(`/chat?contact=${student.id}`)
+                                navigate(`/chat?contact=${student.user_id}`)
                               }
                             >
                               <MessageCircle className="h-4 w-4" />
@@ -397,7 +512,7 @@ const ClassManagement = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="forum" className="space-y-6">
+          {/* <TabsContent value="forum" className="space-y-6">
             <Card className="shadow-soft">
               <CardHeader>
                 <CardTitle>Enviar Mensagem</CardTitle>
@@ -437,7 +552,7 @@ const ClassManagement = () => {
                 </Card>
               ))}
             </div>
-          </TabsContent>
+          </TabsContent> */}
         </Tabs>
       </div>
     </div>

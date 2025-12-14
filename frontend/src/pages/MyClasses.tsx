@@ -137,7 +137,7 @@ const MyClasses = () => {
                 Você ainda não está matriculado em nenhuma turma
               </p>
               <button
-                onClick={() => navigate("/buscar-aulas")}
+                onClick={() => navigate("/buscar-turmas")}
                 className="text-primary hover:underline"
               >
                 Encontrar turmas disponíveis

@@ -59,10 +59,12 @@ const ClassDetails = () => {
   }, [isEnrolled]);
 
   useEffect(() => {
-    if (!classData?.location) return;
+    if (!classData?.location_address) return;
 
     const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-    const destination = encodeURIComponent(classData.location);
+    const destination = encodeURIComponent(classData.location_address);
+
+    console.log("KEY:", apiKey);
 
     if (!apiKey) {
       setLocationStatus("Adicione a chave VITE_GOOGLE_MAPS_API_KEY no .env para ver o mapa.");
@@ -104,12 +106,11 @@ const ClassDetails = () => {
       },
       { enableHighAccuracy: true, timeout: 10000 }
     );
-  }, [classData?.location]);
+  }, [classData?.location_address]);
 
   useEffect(() => {
     const fetchDistance = async () => {
-      if (!userLocation || !classData?.location) return;
-
+      if (!userLocation || !classData?.location_address) return;
       const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
       if (!apiKey) return;
 
@@ -137,7 +138,7 @@ const ClassDetails = () => {
     };
 
     fetchDistance();
-  }, [userLocation, classData?.location]);
+  }, [userLocation, classData?.location_address]);
 
   const fetchClassDetails = async () => {
     try {
@@ -361,7 +362,7 @@ const ClassDetails = () => {
           <CardHeader>
             <div className="flex items-start justify-between">
               <div>
-                <CardTitle className="text-3xl">{classData.activity}</CardTitle>
+                <CardTitle className="text-3xl">{classData.title}</CardTitle>
                 <CardDescription className="text-lg mt-2">
                   {classData.description || "Sem descrição disponível"}
                 </CardDescription>
