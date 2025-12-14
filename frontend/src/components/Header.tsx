@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
-import { Heart, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
+
 import { useAuth } from "@/context/auth";
 
 const Header = () => {
@@ -10,25 +11,24 @@ const Header = () => {
   const location = useLocation();
 
   const navItemsUnauth = [
-    { path: "/", label: "Início" },
-    { path: "/auth", label: "Login" },
+    { path: "/login", label: "Login" },
   ];
 
   const navItemsStudents = [
     { path: "/minhas-turmas", label: "Minhas Turmas" },
-    { path: "/buscar-aulas", label: "Buscar Aulas" },
+    { path: "/buscar-turmas", label: "Buscar Aulas" },
     { path: "/perfil", label: "Perfil" },
     { path: "/chat", label: "Mensagens" },
   ];
 
   const navItemsProfessionals = [
-    { path: "/cadastrar-aulas", label: "Cadastrar aula" },
+    { path: "/criar-turma", label: "Cadastrar aula" },
     { path: "/dashboard", label: "Dashboard" },
     { path: "/perfil", label: "Perfil" },
     { path: "/chat", label: "Mensagens" },
   ];
 
-  const navItems = !user || role === null ? [] : role === "student" ? navItemsStudents : navItemsProfessionals;
+  const navItems = !user || role === null ? navItemsUnauth : role === "student" ? navItemsStudents : navItemsProfessionals;
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -36,13 +36,13 @@ const Header = () => {
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b shadow-soft">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          <div className="flex items-center gap-2 group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-primary flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Heart className="w-6 h-6 text-primary-foreground" />
-            </div>
-            <span className="text-2xl font-bold">
-              Fit<span className="text-primary">Sênior</span>
-            </span>
+          <div className="flex items-center">
+            <img 
+              onClick={() => window.location.href = '/'}
+              src="/move-primary.png"
+              alt="Move+ Logo"
+              className="w-22 h-22 max-w-[15%] object-contain"
+            />
           </div>
 
           {/* Desktop Navigation */}
@@ -51,7 +51,7 @@ const Header = () => {
               <Link key={item.path} to={item.path}>
                 <Button
                   variant={isActive(item.path) ? "default" : "ghost"}
-                  className="text-base"
+                  className="text-base font-bold"
                 >
                   {item.label}
                 </Button>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,11 @@ import {
   User,
   MessageSquare,
   MessageCircle,
+  CreditCard,
+  CheckCircle2,
+  AlertCircle,
 } from "lucide-react";
+import api from "@/lib/api";
 
 const ClassDetails = () => {
   const { id } = useParams();
@@ -44,6 +48,9 @@ const ClassDetails = () => {
   const [locationStatus, setLocationStatus] = useState(
     "Ative a localizacao para estimar a distancia ate a aula."
   );
+  const [currentEnrollmentId, setCurrentEnrollmentId] = useState<string | null>(null);
+  const [paymentStatus, setPaymentStatus] = useState<'loading' | 'paid' | 'pending' | 'none'>('loading');
+  const [paymentData, setPaymentData] = useState<any>(null);
 
   useEffect(() => {
     fetchClassDetails();
@@ -59,10 +66,12 @@ const ClassDetails = () => {
   }, [isEnrolled]);
 
   useEffect(() => {
-    if (!classData?.location) return;
+    if (!classData?.location_address) return;
 
     const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-    const destination = encodeURIComponent(classData.location);
+    const destination = encodeURIComponent(classData.location_address);
+
+    console.log("KEY:", apiKey);
 
     if (!apiKey) {
       setLocationStatus("Adicione a chave VITE_GOOGLE_MAPS_API_KEY no .env para ver o mapa.");
@@ -104,12 +113,11 @@ const ClassDetails = () => {
       },
       { enableHighAccuracy: true, timeout: 10000 }
     );
-  }, [classData?.location]);
+  }, [classData?.location_address]);
 
   useEffect(() => {
     const fetchDistance = async () => {
-      if (!userLocation || !classData?.location) return;
-
+      if (!userLocation || !classData?.location_address) return;
       const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
       if (!apiKey) return;
 
@@ -137,7 +145,7 @@ const ClassDetails = () => {
     };
 
     fetchDistance();
-  }, [userLocation, classData?.location]);
+  }, [userLocation, classData?.location_address]);
 
   const fetchClassDetails = async () => {
     try {
@@ -153,7 +161,7 @@ const ClassDetails = () => {
       setClassData(classInfo);
 
       const { data: profData, error: profError } = await supabase
-        .from("professionals")
+        .from("profiles")
         .select("*")
         .eq("id", classInfo.professional_id)
         .single();
@@ -181,12 +189,10 @@ const ClassDetails = () => {
 
   const fetchClassmates = async () => {
     try {
-      // 1. Busca os enrollments da turma
       const { data: enrollments, error: enrollError } = await supabase
         .from("enrollments")
-        .select("id, student_id")
+        .select("id, user_id")
         .eq("class_id", id)
-        .eq("status", "enrolled");
 
       if (enrollError) throw enrollError;
 
@@ -195,30 +201,28 @@ const ClassDetails = () => {
         return;
       }
 
-      // 2. Busca os dados dos estudantes usando os user_ids
-      const studentIds = enrollments.map((e) => e.student_id);
+      const studentIds = enrollments.map((e) => e.user_id);
 
       const { data: students, error: studentsError } = await supabase
-        .from("students")
-        .select("user_id, full_name, email, phone, gender")
-        .in("user_id", studentIds);
+        .from("profiles")
+        .select("id, full_name, email, phone, gender")
+        .in("id", studentIds);
 
       if (studentsError) throw studentsError;
 
-      // 3. Combina os dados
       const classmates = enrollments.map((enrollment) => {
         const student = students?.find(
-          (s) => s.user_id === enrollment.student_id
+          (s) => s.id === enrollment.user_id
         );
 
         return {
           enrollment_id: enrollment.id,
-          student_id: enrollment.student_id,
+          student_id: enrollment.user_id,
           full_name: student?.full_name || "Nome não encontrado",
           email: student?.email,
           phone: student?.phone,
           gender: student?.gender,
-          avatar_url: "" //student.avatar_url,
+          avatar_url: "" // student?.avatar_url,
         };
       });
 
@@ -238,11 +242,15 @@ const ClassDetails = () => {
         .from("enrollments")
         .select("*")
         .eq("class_id", id)
-        .eq("student_id", user.id)
+        .eq("user_id", user.id)
         .maybeSingle();
 
       if (error) throw error;
       setIsEnrolled(!!data);
+
+      if (data) {
+        setCurrentEnrollmentId(data.id);
+      }
     } catch (error: any) {
       console.error("Error checking enrollment:", error);
     }
@@ -299,7 +307,7 @@ const ClassDetails = () => {
       return;
     }
 
-    if (enrollmentCount >= classData.max_students) {
+    if (enrollmentCount >= classData.capacity) {
       toast({
         title: "Turma cheia",
         description: "Esta turma já atingiu o número máximo de alunos.",
@@ -317,9 +325,7 @@ const ClassDetails = () => {
 
       const { error } = await supabase.from("enrollments").insert({
         class_id: id,
-        student_id: user.id,
         user_id: user.id,
-        status: "enrolled",
       });
 
       if (error) throw error;
@@ -342,6 +348,86 @@ const ClassDetails = () => {
     }
   };
 
+  // Verificar status do pagamento
+  const checkPaymentStatus = useCallback(async () => {
+    if (!currentEnrollmentId || !classData?.price || classData.price === 0) {
+      setPaymentStatus('none');
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from("payments")
+        .select("*")
+        .eq("enrollment_id", currentEnrollmentId)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      if (data) {
+        setPaymentData(data);
+        setPaymentStatus(data.status === 'paid' ? 'paid' : 'pending');
+      } else {
+        setPaymentStatus('pending');
+      }
+    } catch (error: any) {
+      console.error('Error checking payment:', error);
+      setPaymentStatus('pending');
+    }
+  }, [currentEnrollmentId, classData?.price]);
+
+  useEffect(() => {
+    if (currentEnrollmentId) {
+      checkPaymentStatus();
+    }
+  }, [currentEnrollmentId, checkPaymentStatus]);
+
+  const handlePayment = async () => {
+    if (!currentEnrollmentId || !classData) return;
+
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast({
+          title: "Erro",
+          description: "Você precisa estar logado para realizar o pagamento.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { error } = await supabase
+        .from("payments")
+        .insert({
+          class_id: id,
+          enrollment_id: currentEnrollmentId,
+          student_id: user.id,
+          amount: classData.price,
+          status: "paid",
+          payment_date: new Date().toISOString().split('T')[0]
+        });
+
+      if (error) throw error;
+      
+      toast({
+        title: "Pagamento confirmado!",
+        description: "Seu pagamento foi registrado com sucesso.",
+      });
+      
+      checkPaymentStatus();
+    } catch (error: any) {
+      console.error('Error processing payment:', error);
+      toast({
+        title: "Erro ao processar pagamento",
+        description: error.message || "Tente novamente.",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (loading) {
     return <div className="container py-12">Carregando...</div>;
   }
@@ -350,10 +436,10 @@ const ClassDetails = () => {
     return <div className="container py-12">Turma não encontrada</div>;
   }
 
-  const availableSpots = classData.max_students - enrollmentCount;
+  const availableSpots = classData.capacity - enrollmentCount;
   const originParam = userLocation ? `${userLocation.lat},${userLocation.lng}` : "";
   const routeUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
-    classData.location
+    classData.location_address
   )}&travelmode=walking${originParam ? `&origin=${originParam}` : ""}`;
 
   return (
@@ -367,7 +453,7 @@ const ClassDetails = () => {
           <CardHeader>
             <div className="flex items-start justify-between">
               <div>
-                <CardTitle className="text-3xl">{classData.activity}</CardTitle>
+                <CardTitle className="text-3xl">{classData.title}</CardTitle>
                 <CardDescription className="text-lg mt-2">
                   {classData.description || "Sem descrição disponível"}
                 </CardDescription>
@@ -386,7 +472,7 @@ const ClassDetails = () => {
               <div className="flex items-center gap-3">
                 <MapPin className="h-5 w-5 text-muted-foreground" />
                 <span className="font-medium">Local:</span>
-                <span>{classData.location}</span>
+                <span>{classData.location_address}</span>
               </div>
 
               <div className="flex items-center gap-3">
@@ -572,6 +658,60 @@ const ClassDetails = () => {
                     )}
                   </div>
                 </div>
+
+                {/* Adicionar seção de pagamento após o badge de matrícula */}
+                {isEnrolled && classData?.price && classData.price > 0 && (
+                  <Card className="mt-6">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <CreditCard className="h-5 w-5" />
+                        Pagamento
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {paymentStatus === 'loading' && (
+                        <div className="text-center py-4">Carregando informações de pagamento...</div>
+                      )}
+                      
+                      {paymentStatus === 'paid' && paymentData && (
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                          <div className="flex items-center gap-2 text-green-700 font-medium mb-2">
+                            <CheckCircle2 className="h-5 w-5" />
+                            Pagamento Confirmado
+                          </div>
+                          <p className="text-sm text-green-600">
+                            Valor: R$ {paymentData.amount.toFixed(2)}
+                          </p>
+                          <p className="text-sm text-green-600">
+                            Data: {new Date(paymentData.payment_date).toLocaleDateString('pt-BR')}
+                          </p>
+                        </div>
+                      )}
+                      
+                      {paymentStatus === 'pending' && (
+                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                          <div className="flex items-center gap-2 text-yellow-700 font-medium mb-2">
+                            <AlertCircle className="h-5 w-5" />
+                            Pagamento Pendente
+                          </div>
+                          <p className="text-sm text-yellow-600 mb-4">
+                            Valor da mensalidade: R$ {classData.price.toFixed(2)}
+                          </p>
+                          <Button 
+                            onClick={handlePayment}
+                            className="w-full"
+                          >
+                            <CreditCard className="mr-2 h-4 w-4" />
+                            Realizar Pagamento
+                          </Button>
+                          <p className="text-xs text-gray-500 text-center mt-2">
+                            Clique para registrar o pagamento da mensalidade
+                          </p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                )}
               </>
             )}
           </CardContent>

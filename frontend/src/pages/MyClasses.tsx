@@ -15,9 +15,6 @@ import { Button } from "@/components/ui/button";
 import {
   MapPin,
   Clock,
-  Users,
-  Bell,
-  BellOff,
   MessageCircle,
 } from "lucide-react";
 
@@ -44,6 +41,7 @@ const MyClasses = () => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
+
       if (!user) throw new Error("Usuário não autenticado");
 
       const { data: enrollments, error: enrollError } = await supabase
@@ -54,16 +52,15 @@ const MyClasses = () => {
           class_id,
           classes (
             id,
-            activity,
+            title,
             schedule,
-            location,
-            max_students,
+            location_address,
+            capacity,
             description
           )
         `
         )
-        .eq("student_id", user.id)
-        .eq("status", "enrolled");
+        .eq("user_id", user.id);
 
       if (enrollError) throw enrollError;
 
@@ -111,11 +108,15 @@ const MyClasses = () => {
   };
 
   if (loading) {
-    return <div className="container py-12">Carregando...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        Carregando...
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary/5 to-background py-12 px-4">
+    <div className="min-h-screen bg-gradient-hero from-primary/5 to-background py-12 px-4">
       <div className="container max-w-6xl mx-auto">
         <div className="max-w flex justify-between">
           <div className="mb-8">
@@ -136,7 +137,7 @@ const MyClasses = () => {
                 Você ainda não está matriculado em nenhuma turma
               </p>
               <button
-                onClick={() => navigate("/buscar-aulas")}
+                onClick={() => navigate("/buscar-turmas")}
                 className="text-primary hover:underline"
               >
                 Encontrar turmas disponíveis
@@ -147,16 +148,14 @@ const MyClasses = () => {
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {enrolledClasses.map((classItem) => (
               <Card
+                onClick={() => navigate(`/turma-aluno/${classItem.id}`)}
                 key={classItem.id}
                 className="cursor-pointer hover:shadow-lg transition-all duration-200"
               >
                 <CardHeader>
-                  <CardTitle
-                    onClick={() => navigate(`/turma-aluno/${classItem.id}`)}
-                    className="flex items-start justify-between"
-                  >
+                  <CardTitle className="flex items-start justify-between">
                     <span className="hover:text-primary transition-colors">
-                      {classItem.activity}
+                      {classItem.title}
                     </span>
                   </CardTitle>
                   <CardDescription className="line-clamp-2">
@@ -170,7 +169,7 @@ const MyClasses = () => {
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <MapPin className="h-4 w-4 text-muted-foreground" />
-                    <span>{classItem.location}</span>
+                    <span>{classItem.location_address}</span>
                   </div>
 
                   <div className="pt-4 border-t space-y-2">
